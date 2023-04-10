@@ -1,0 +1,201 @@
+{% extends "companyhome.html" %} {% load static %} {% block content %}
+<section id="main-content">
+    <section class="wrapper" style="min-height: 93vh">
+        <h3>Applicants</h3>
+        <div class="row mt">
+            <div class="col-lg-10">
+                <div class="content-panel" style="padding: 10px 10px;">
+
+                    <section id="unseen">
+                        <form name="f1" method="post" action="{% url 'list_applicants' %}">
+                            {% csrf_token %}
+
+                        </form>
+                        <table class="table table-bordered table-striped table-condensed" style="width: 100%">
+
+                            <thead>
+                                <tr>
+                                    <th>Sl:No</th>
+                                    <th>Job Title</th>
+                                    <th>Job Designation</th>
+                                    <th>Total Applicants</th>
+                                    <th>Application Status</th>
+<th>Exam status</th>
+                                    
+                                    <th>Action</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in app_list %}
+                                <tr>
+                                    <td>{{forloop.counter}}</td>
+                                    <td>{{d.job_id.job_title}}</td>
+                                    <td>{{d.job_id.job_designation}}</td>
+                                    <td>{{d.candidate_id.candidate_name}}</td>
+                                    <td>{{d.applicant_status|title}}</td>
+<td>{{d.exam_status|title}}</td>
+                                    <!--{% url 'approve_listjobs' %}-->
+
+
+                            {% if d.applicant_status == "waiting" %}
+                                    <td>
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown"
+                                          aria-expanded="false">
+                                          Action
+                                        </button>
+                                        <ul class="dropdown-menu">
+                  
+                                            <li>
+
+                                                <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#approve-{{d.applicant_id}}">View</a>
+
+                                            </li>
+                                            <!--<li>
+
+                                                <a class="btn btn-link" data-bs-toggle="modal" data-bs-target="#request-{{d.applicant_id}}">Announcement</a>
+
+                                            </li>-->
+                                           
+                  
+                                        </ul>
+                                      </div>
+                            {% else %}
+                                      {% if d.resume_status == "waiting" and d.result_status != "" %}
+                                      {% if d.result_status == "pass" %}
+                                        <td>Waiting for resume upload</td>
+                                        {% else %}
+                                        <td> The candiadte has failed </td>{% endif %}
+                                     
+                                      
+                                      {% elif d.resume_status != "" or d.resume_status != "waiting" %}
+                                      <td>
+                                        <ul style="list-style-type:none;"><li>
+                                        <object data="/media/{{d.resume_status}}" type="application/pdf" width="300" height="200">
+                                            <a href="/media/{{d.resume_status}}"> View resume</a>
+                                            </object></li>
+                                            {% if d.invitation_status == "" %}
+                                            <li>
+
+                                                <a class="btn btn-success" data-bs-toggle="modal" data-bs-target="#comp-{{d.applicant_id}}">Invite Applicant</a>
+
+                                            </li>
+                                            {% else %}
+                                             <li>Invited</li>
+                                             
+                                {% endif %}</ul>
+
+                                    </td>
+                                {% endif %}</td>
+                            {% endif %}
+
+                                  
+                                    <div class="modal fade" id="approve-{{d.applicant_id}}" role="dialog">
+                                        <div class="modal-dialog modal-lg">
+                                          <div class="modal-content">
+                                            <div class="modal-header">
+                                              <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true"><span
+                                                  class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                              <h4 class="modal-title custom_align" id="Heading">Forward</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                              <br>
+                                              <h3 class="modal-title custom_align" id="Heading" style="margin-left:200px;color:#555">Are
+                                                you sure to forward to Applicant?</h3>
+                                              <br>
+                                              <form class="form-horizontal" method="post" name="myForm" onsubmit=""
+                                                action="{% url 'attendexams' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" class="form-control" value="{{d.applicant_id}}" name="id">
+                                                <div class="box-content">
+                    
+                                                  <button name="delete" type="submit" class="btn btn-success"><span class="glyphicon 
+                                                                          glyphicon-ok-sign"></span>Submit</button>
+                                                  <button type="reset" class="btn btn-default pull-right" data-bs-dismiss="modal"><span
+                                                      class="glyphicon glyphicon-remove"></span>No</button>
+                                                </div>
+                                              </form></div></div></div></div>
+                                    <!--Announcement-->
+
+                                    <div class="modal fade" id="request-{{d.applicant_id}}" role="dialog">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true"><span
+                              class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                                    <h4 class="modal-title custom_align" id="Heading">Announce</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form class="form-horizontal" method="post" name="myForm" onsubmit="" action="{% url 'announced' %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" class="form-control" value="{{d.applicant_id}}" name="id">
+
+                                                        <div class="box-content">
+                                                            <div class="col-md-12">
+                                                                <h3 class="modal-title custom_align" id="Heading" style="color: #333">Announce
+                                                                </h3>
+                                                            </div>
+                                                            <br><br><br>
+                                                            <button name="edit" type="submit" class="btn btn-success"><span class="glyphicon 
+                                  glyphicon-ok-sign"></span>Submit</button>
+                                                            <button type="reset" class="btn btn-default pull-right" data-bs-dismiss="modal"><span
+                                  class="glyphicon glyphicon-remove"></span>No</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--Invite-->
+                                    <div class="modal fade" id="comp-{{d.applicant_id}}" role="dialog">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true"><span
+                class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                                                    <h4 class="modal-title custom_align" id="Heading">Invite</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form class="form-horizontal" method="post" name="myForm" onsubmit="" action="{% url 'invited' %}">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" class="form-control" value="{{d.applicant_id}}" name="id">
+
+                                                        <div class="box-content">
+                                                            <div class="col-md-12">
+                                                                <h3 class="modal-title custom_align" id="Heading" style="color: #333">Invite
+                                                                </h3>
+                                                            </div>
+                                                            <br><br><br>
+                                                            <button name="edit" type="submit" class="btn btn-success"><span class="glyphicon 
+                    glyphicon-ok-sign"></span>Submit</button>
+                                                            <button type="reset" class="btn btn-default pull-right" data-bs-dismiss="modal"><span
+                    class="glyphicon glyphicon-remove"></span>No</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+                <!-- /content-panel -->
+            </div>
+            <!-- /col-lg-4 -->
+            <div style="height:530px;">
+            </div>
+        </div>
+        <!-- /row -->
+    </section>
+</section>
+
+
+
+
+
+{% endblock %}
